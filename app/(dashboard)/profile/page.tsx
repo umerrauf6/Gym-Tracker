@@ -33,14 +33,38 @@ export default function ProfilePage() {
 
   const [signingOut, setSigningOut] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [checkingOut, setCheckingOut] = useState(false);
+  const [checkoutError, setCheckoutError] = useState("");
   const [soundEnabled, setSoundEnabled] = useState(true);
 
   const totalTonnage = history.reduce((sum, item) => sum + sessionVolume(item), 0);
 
+  const handleCheckout = async () => {
+    try {
+      setCheckingOut(true);
+      setCheckoutError("");
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setCheckoutError(data.error || "Could not launch Stripe Checkout");
+      }
+    } catch {
+      setCheckoutError("Failed to connect to checkout service");
+    } finally {
+      setCheckingOut(false);
+    }
+  };
+
   const signOut = async () => {
     setSigningOut(true);
     await getSupabaseBrowserClient()?.auth.signOut();
-    router.replace("/sign-in");
+    router.replace("/login");
     router.refresh();
   };
 
@@ -341,13 +365,29 @@ export default function ProfilePage() {
                 ))}
               </div>
 
-              <button
-                className="primary-button"
-                style={{ width: "100%", height: 48, fontSize: 14 }}
-                onClick={() => setUpgradeOpen(false)}
-              >
-                Continue Training
-              </button>
+              {checkoutError && (
+                <div className="auth-error" style={{ marginBottom: 16 }}>
+                  {checkoutError}
+                </div>
+              )}
+
+              <div style={{ display: "grid", gap: 10, marginTop: 24 }}>
+                <button
+                  className="primary-button"
+                  style={{ width: "100%", height: 48, fontSize: 14 }}
+                  disabled={checkingOut}
+                  onClick={handleCheckout}
+                >
+                  <Sparkles size={16} /> {checkingOut ? "Redirecting to Stripe..." : "Upgrade to Pro Lifetime ($29)"}
+                </button>
+                <button
+                  className="ghost-button"
+                  style={{ width: "100%", height: 40, fontSize: 13 }}
+                  onClick={() => setUpgradeOpen(false)}
+                >
+                  Dismiss
+                </button>
+              </div>
             </motion.section>
           </motion.div>
         )}
