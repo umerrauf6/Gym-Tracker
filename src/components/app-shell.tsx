@@ -15,6 +15,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
+import { getSupabaseBrowserClient } from "@/src/lib/supabase";
 import { useAppStore } from "@/src/store/use-app-store";
 
 const navItems = [
@@ -31,6 +32,32 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { activeWorkout, startQuickWorkout } = useAppStore();
   const [search, setSearch] = useState("");
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [userName, setUserName] = useState("Lifter");
+  const [userInitials, setUserInitials] = useState("UR");
+
+  // Fetch logged in user details
+  useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) return;
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        const name =
+          user.user_metadata?.full_name ||
+          user.user_metadata?.name ||
+          (user.email ? user.email.split("@")[0] : "Lifter");
+        setUserName(name);
+        if (name) {
+          const initials = name
+            .split(" ")
+            .map((part: string) => part[0])
+            .join("")
+            .slice(0, 2)
+            .toUpperCase();
+          setUserInitials(initials || "UR");
+        }
+      }
+    });
+  }, []);
 
   // Global search submit
   const submitSearch = (event: FormEvent) => {
@@ -176,9 +203,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
             {/* User Profile Chip */}
             <Link href="/profile" className="user-chip">
-              <span className="avatar">UR</span>
+              <span className="avatar">{userInitials}</span>
               <span className="user-copy">
-                <span className="user-name">Umer Rauf</span>
+                <span className="user-name" style={{ textTransform: "capitalize" }}>{userName}</span>
                 <span className="user-plan">Pro Member</span>
               </span>
             </Link>

@@ -14,7 +14,7 @@ import {
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PageHeading } from "@/src/components/page-heading";
 import { getSupabaseBrowserClient } from "@/src/lib/supabase";
 import { sessionVolume, useAppStore } from "@/src/store/use-app-store";
@@ -31,6 +31,9 @@ export default function ProfilePage() {
     history,
   } = useAppStore();
 
+  const [userEmail, setUserEmail] = useState<string>("");
+  const [userName, setUserName] = useState<string>("Lifter");
+  const [userInitials, setUserInitials] = useState<string>("UR");
   const [signingOut, setSigningOut] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [checkingOut, setCheckingOut] = useState(false);
@@ -39,6 +42,31 @@ export default function ProfilePage() {
 
   const totalTonnage = history.reduce((sum, item) => sum + sessionVolume(item), 0);
 
+  useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) return;
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        const email = user.email || "";
+        setUserEmail(email);
+        const name =
+          user.user_metadata?.full_name ||
+          user.user_metadata?.name ||
+          (email ? email.split("@")[0] : "Lifter");
+        setUserName(name);
+        if (name) {
+          const initials = name
+            .split(" ")
+            .map((part: string) => part[0])
+            .join("")
+            .slice(0, 2)
+            .toUpperCase();
+          setUserInitials(initials || "UR");
+        }
+      }
+    });
+  }, []);
+
   const handleCheckout = async () => {
     try {
       setCheckingOut(true);
@@ -46,7 +74,7 @@ export default function ProfilePage() {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ userEmail }),
       });
       const data = await res.json();
       if (data.url) {
@@ -81,11 +109,11 @@ export default function ProfilePage() {
         <section className="panel profile-card">
           {/* User Hero */}
           <div className="profile-hero">
-            <div className="profile-avatar">UR</div>
+            <div className="profile-avatar">{userInitials}</div>
             <div>
-              <h2 className="profile-name">Umer Rauf</h2>
+              <h2 className="profile-name" style={{ textTransform: "capitalize" }}>{userName}</h2>
               <div className="profile-email">
-                umer@example.com · <span style={{ color: "var(--accent)", fontWeight: 700 }}>Pro Member</span>
+                {userEmail || "Signed In User"} · <span style={{ color: "var(--accent)", fontWeight: 700 }}>Pro Member</span>
               </div>
             </div>
           </div>
