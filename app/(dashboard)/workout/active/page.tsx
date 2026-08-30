@@ -3,10 +3,13 @@
 import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
 import {
+  AlertTriangle,
   ArrowLeftRight,
+  BookOpen,
   Check,
   CircleStop,
   Dumbbell,
+  Eye,
   Minus,
   Play,
   Plus,
@@ -19,7 +22,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { EXERCISES, getExerciseById } from "@/src/data/exercises";
+import { EXERCISES, type Exercise, getExerciseById } from "@/src/data/exercises";
 import { sessionVolume, useAppStore } from "@/src/store/use-app-store";
 
 const formatTime = (seconds: number) =>
@@ -43,6 +46,7 @@ export default function ActiveWorkoutPage() {
   const [timer, setTimer] = useState(0);
   const [running, setRunning] = useState(false);
   const [swapping, setSwapping] = useState<string | null>(null);
+  const [viewingExercise, setViewingExercise] = useState<Exercise | null>(null);
   const [finishModalOpen, setFinishModalOpen] = useState(false);
   const [discardModalOpen, setDiscardModalOpen] = useState(false);
 
@@ -242,15 +246,26 @@ export default function ActiveWorkoutPage() {
                     </div>
                   </div>
 
-                  <button
-                    className="secondary-button"
-                    style={{ height: 36, padding: "0 12px", fontSize: 12 }}
-                    onClick={() =>
-                      setSwapping(swapping === exercise.id ? null : exercise.id)
-                    }
-                  >
-                    <ArrowLeftRight size={13} /> Swap Machine
-                  </button>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <button
+                      type="button"
+                      className="ghost-button"
+                      style={{ height: 36, padding: "0 12px", fontSize: 12 }}
+                      onClick={() => setViewingExercise(exercise)}
+                    >
+                      <Eye size={14} /> View
+                    </button>
+                    <button
+                      type="button"
+                      className="secondary-button"
+                      style={{ height: 36, padding: "0 12px", fontSize: 12 }}
+                      onClick={() =>
+                        setSwapping(swapping === exercise.id ? null : exercise.id)
+                      }
+                    >
+                      <ArrowLeftRight size={13} /> Swap Machine
+                    </button>
+                  </div>
                 </div>
 
                 {/* Inline Equipment Swapper Deck */}
@@ -632,6 +647,115 @@ export default function ActiveWorkoutPage() {
                   <Trash2 size={15} /> Yes, Discard
                 </button>
               </div>
+            </motion.section>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {/* Exercise Detail / Technique Guide Modal */}
+      <AnimatePresence>
+        {viewingExercise && (
+          <motion.div
+            className="modal-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onMouseDown={() => setViewingExercise(null)}
+          >
+            <motion.section
+              className="modal"
+              style={{ maxWidth: 560, maxHeight: "90vh", overflowY: "auto" }}
+              initial={{ opacity: 0, scale: 0.96, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 8 }}
+              onMouseDown={(e) => e.stopPropagation()}
+            >
+              <div className="modal-head">
+                <div>
+                  <div className="eyebrow" style={{ color: "var(--cyan)" }}>
+                    <BookOpen size={13} /> Technique & Form Guide
+                  </div>
+                  <h2 className="modal-title">{viewingExercise.name}</h2>
+                  <div style={{ display: "flex", gap: 8, marginTop: 6, flexWrap: "wrap" }}>
+                    <span className="filter-chip active" style={{ padding: "3px 10px", fontSize: 11 }}>
+                      {viewingExercise.primaryMuscle}
+                    </span>
+                    <span className="filter-chip" style={{ padding: "3px 10px", fontSize: 11 }}>
+                      {viewingExercise.equipment}
+                    </span>
+                    {viewingExercise.secondaryMuscles.map((m) => (
+                      <span key={m} className="filter-chip" style={{ padding: "3px 10px", fontSize: 11, color: "var(--text-muted)" }}>
+                        + {m}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <button
+                  className="icon-button"
+                  onClick={() => setViewingExercise(null)}
+                >
+                  <X size={15} />
+                </button>
+              </div>
+
+              {/* Photo */}
+              <div
+                style={{
+                  position: "relative",
+                  width: "100%",
+                  height: 240,
+                  borderRadius: "var(--radius)",
+                  overflow: "hidden",
+                  border: "1px solid var(--border)",
+                  background: "var(--bg-subtle)",
+                  margin: "18px 0",
+                }}
+              >
+                <Image
+                  src={`/exercises/${viewingExercise.id}.png`}
+                  alt={viewingExercise.name}
+                  fill
+                  style={{ objectFit: "cover" }}
+                />
+              </div>
+
+              {/* Step by step cues */}
+              <div style={{ marginBottom: 18 }}>
+                <h4 style={{ fontSize: 13, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-secondary)", marginBottom: 10 }}>
+                  Execution Cues
+                </h4>
+                <div style={{ display: "grid", gap: 8 }}>
+                  {viewingExercise.instructions.map((step, idx) => (
+                    <div key={idx} style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 13, color: "var(--text-primary)", lineHeight: 1.5 }}>
+                      <span style={{ minWidth: 20, height: 20, borderRadius: "50%", background: "var(--accent-soft)", color: "var(--accent)", display: "grid", placeItems: "center", fontSize: 11, fontWeight: 800 }}>
+                        {idx + 1}
+                      </span>
+                      <span>{step}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Common mistakes */}
+              {viewingExercise.commonMistakes && viewingExercise.commonMistakes.length > 0 && (
+                <div style={{ padding: 14, background: "rgba(244, 63, 94, 0.08)", border: "1px solid rgba(244, 63, 94, 0.2)", borderRadius: "var(--radius-sm)", marginBottom: 20 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "var(--rose)", marginBottom: 6, display: "flex", alignItems: "center", gap: 6 }}>
+                    <AlertTriangle size={13} /> Common Mistakes to Avoid
+                  </div>
+                  <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                    {viewingExercise.commonMistakes.map((mistake, idx) => (
+                      <li key={idx}>{mistake}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <button
+                className="primary-button"
+                style={{ width: "100%", height: 44 }}
+                onClick={() => setViewingExercise(null)}
+              >
+                Back to Logging Sets
+              </button>
             </motion.section>
           </motion.div>
         )}
