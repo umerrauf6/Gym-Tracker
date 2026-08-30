@@ -157,6 +157,8 @@ h1, h2, h3, h4, .font-heading {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .brand-mark {
@@ -168,6 +170,7 @@ h1, h2, h3, h4, .font-heading {
   background: linear-gradient(135deg, var(--accent) 0%, #0db84e 100%);
   color: var(--accent-ink);
   box-shadow: 0 4px 16px var(--accent-glow);
+  flex-shrink: 0;
 }
 
 .brand-name {
@@ -176,6 +179,7 @@ h1, h2, h3, h4, .font-heading {
   font-weight: 800;
   letter-spacing: -0.03em;
   color: #fff;
+  white-space: nowrap;
 }
 
 .brand-name span {
@@ -300,6 +304,7 @@ h1, h2, h3, h4, .font-heading {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-shrink: 0;
 }
 
 .unified-main-content {
@@ -367,6 +372,8 @@ h1, h2, h3, h4, .font-heading {
   color: var(--accent);
   font-size: 12px;
   font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
   animation: pulse-glow 2s infinite ease-in-out;
 }
 
@@ -443,6 +450,8 @@ h1, h2, h3, h4, .font-heading {
   border: 1px solid var(--border);
   background: var(--bg-card);
   transition: border-color 0.15s ease;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .user-chip:hover {
@@ -452,6 +461,7 @@ h1, h2, h3, h4, .font-heading {
 .user-copy {
   display: grid;
   text-align: left;
+  white-space: nowrap;
 }
 
 .avatar {
@@ -464,18 +474,21 @@ h1, h2, h3, h4, .font-heading {
   background: linear-gradient(135deg, var(--accent) 0%, #0db84e 100%);
   font-weight: 800;
   font-size: 12px;
+  flex-shrink: 0;
 }
 
 .user-name {
   font-size: 12px;
   font-weight: 700;
   color: #fff;
+  white-space: nowrap;
 }
 
 .user-plan {
   color: var(--accent);
   font-size: 10px;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 /* ==========================================================================

@@ -118,25 +118,26 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <span className="topbar-kbd">⌘K</span>
             </form>
 
-            {/* Active Workout Status Pill */}
-            {activeWorkout && (
-              <Link href="/workout/active" className="active-workout-pill">
-                <span className="pulse-dot" />
-                <span>Session Active</span>
-              </Link>
+            {/* Active Workout Action */}
+            {activeWorkout ? (
+              pathname !== "/workout/active" && (
+                <Link href="/workout/active" className="active-workout-pill">
+                  <span className="pulse-dot" />
+                  <span>Resume Session</span>
+                </Link>
+              )
+            ) : (
+              <motion.button
+                whileTap={{ scale: 0.96 }}
+                whileHover={{ y: -1 }}
+                className="primary-button"
+                style={{ height: 40, padding: "0 14px", fontSize: 12, flexShrink: 0 }}
+                onClick={handleStartWorkout}
+              >
+                <Play size={13} fill="currentColor" />
+                Workout
+              </motion.button>
             )}
-
-            {/* Quick Start / Resume Action */}
-            <motion.button
-              whileTap={{ scale: 0.96 }}
-              whileHover={{ y: -1 }}
-              className="primary-button"
-              style={{ height: 40, padding: "0 14px", fontSize: 12 }}
-              onClick={handleStartWorkout}
-            >
-              <Play size={13} fill="currentColor" />
-              {activeWorkout ? "Resume" : "Workout"}
-            </motion.button>
 
             {/* Notification Drawer */}
             <div className="notification-wrap">
