@@ -17,6 +17,22 @@ export async function POST(request: NextRequest) {
 
     const configuredPriceId = priceId || process.env.STRIPE_PRO_PRICE_ID;
 
+    let mode: "payment" | "subscription" = "payment";
+
+    // Detect if the price is recurring subscription or one-time payment
+    if (configuredPriceId) {
+      try {
+        const price = await stripe.prices.retrieve(configuredPriceId);
+        if (price.type === "recurring") {
+          mode = "subscription";
+        } else {
+          mode = "payment";
+        }
+      } catch (err) {
+        console.warn("Could not retrieve price type from Stripe, defaulting based on ID:", err);
+      }
+    }
+
     // Use configured price ID if available, otherwise fall back to dynamic line item
     const line_items = configuredPriceId
       ? [{ price: configuredPriceId, quantity: 1 }]
@@ -25,7 +41,7 @@ export async function POST(request: NextRequest) {
             price_data: {
               currency: "usd",
               product_data: {
-                name: "GymTracker Pro Lifetime",
+                name: "GymTracker Pro",
                 description: "Unlimited custom splits, smart equipment alternatives, and volume analytics.",
                 images: [`${origin}/exercises/barbell-bench-press.png`],
               },
@@ -38,13 +54,13 @@ export async function POST(request: NextRequest) {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items,
-      mode: "payment",
+      mode,
       customer_email: userEmail || undefined,
       client_reference_id: userId || undefined,
       metadata: {
         userId: userId || "",
         userEmail: userEmail || "",
-        plan: "pro_lifetime",
+        plan: mode === "subscription" ? "pro_subscription" : "pro_lifetime",
       },
       success_url: `${origin}/profile?payment=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/profile?payment=cancelled`,
