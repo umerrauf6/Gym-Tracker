@@ -1,0 +1,357 @@
+"use client";
+
+import { AnimatePresence, motion } from "motion/react";
+import {
+  Bell,
+  Check,
+  Crown,
+  LogOut,
+  Moon,
+  Ruler,
+  Sparkles,
+  Timer,
+  Volume2,
+  X,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { PageHeading } from "@/src/components/page-heading";
+import { getSupabaseBrowserClient } from "@/src/lib/supabase";
+import { sessionVolume, useAppStore } from "@/src/store/use-app-store";
+
+export default function ProfilePage() {
+  const router = useRouter();
+  const {
+    notifications,
+    toggleNotifications,
+    restSeconds,
+    setRestSeconds,
+    unit,
+    setUnit,
+    history,
+  } = useAppStore();
+
+  const [signingOut, setSigningOut] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+
+  const totalTonnage = history.reduce((sum, item) => sum + sessionVolume(item), 0);
+
+  const signOut = async () => {
+    setSigningOut(true);
+    await getSupabaseBrowserClient()?.auth.signOut();
+    router.replace("/sign-in");
+    router.refresh();
+  };
+
+  return (
+    <div className="page">
+      <PageHeading
+        eyebrow="Account Command"
+        title="Profile & Preferences"
+        subtitle="Manage your training preferences, rest timer durations, workout units, and membership tier."
+      />
+
+      <div className="profile-layout">
+        {/* Main Settings Panel */}
+        <section className="panel profile-card">
+          {/* User Hero */}
+          <div className="profile-hero">
+            <div className="profile-avatar">UR</div>
+            <div>
+              <h2 className="profile-name">Umer Rauf</h2>
+              <div className="profile-email">
+                umer@example.com · <span style={{ color: "var(--accent)", fontWeight: 700 }}>Pro Member</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Lifetime Summary */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: 12,
+              margin: "20px 0",
+              padding: 16,
+              background: "var(--bg-subtle)",
+              borderRadius: 10,
+              border: "1px solid var(--border)",
+            }}
+          >
+            <div>
+              <div style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>
+                Total Sessions
+              </div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: "#fff", marginTop: 2 }}>
+                {history.length}
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>
+                Total Tonnage
+              </div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: "var(--accent)", marginTop: 2 }}>
+                {totalTonnage.toLocaleString()} {unit}
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>
+                Status
+              </div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: "var(--cyan)", marginTop: 2 }}>
+                Active
+              </div>
+            </div>
+          </div>
+
+          {/* Preferences List */}
+          <div className="setting-list">
+            {/* Notifications */}
+            <div className="setting-row">
+              <div className="setting-copy">
+                <strong>
+                  <Bell size={15} color="var(--accent)" /> Workout Notifications
+                </strong>
+                <span>Rest interval alerts and scheduled workout reminders</span>
+              </div>
+              <button
+                aria-label="Toggle notifications"
+                className={`toggle ${notifications ? "active" : ""}`}
+                onClick={toggleNotifications}
+              >
+                <motion.span
+                  className="toggle-dot"
+                  animate={{ x: notifications ? 22 : 0 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              </button>
+            </div>
+
+            {/* Rest Timer */}
+            <div className="setting-row">
+              <div className="setting-copy">
+                <strong>
+                  <Timer size={15} color="var(--cyan)" /> Default Rest Interval
+                </strong>
+                <span>Auto-countdown time after finishing each working set</span>
+              </div>
+              <select
+                className="set-input"
+                style={{ width: 110 }}
+                value={restSeconds}
+                onChange={(event) => setRestSeconds(Number(event.target.value))}
+              >
+                <option value="45">45 sec</option>
+                <option value="60">60 sec</option>
+                <option value="90">90 sec</option>
+                <option value="120">2 min</option>
+                <option value="180">3 min</option>
+              </select>
+            </div>
+
+            {/* Weight Units */}
+            <div className="setting-row">
+              <div className="setting-copy">
+                <strong>
+                  <Ruler size={15} color="var(--purple)" /> Weight Unit Standard
+                </strong>
+                <span>Used across exercise logs, routine builders, and analytics</span>
+              </div>
+              <select
+                className="set-input"
+                style={{ width: 90 }}
+                value={unit}
+                onChange={(event) => setUnit(event.target.value as "kg" | "lb")}
+              >
+                <option value="kg">kg</option>
+                <option value="lb">lb</option>
+              </select>
+            </div>
+
+            {/* Sound Effects */}
+            <div className="setting-row">
+              <div className="setting-copy">
+                <strong>
+                  <Volume2 size={15} color="var(--amber)" /> Timer Audio Cue
+                </strong>
+                <span>Audible ping when rest period completes</span>
+              </div>
+              <button
+                aria-label="Toggle sound cues"
+                className={`toggle ${soundEnabled ? "active" : ""}`}
+                onClick={() => setSoundEnabled((v) => !v)}
+              >
+                <motion.span
+                  className="toggle-dot"
+                  animate={{ x: soundEnabled ? 22 : 0 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              </button>
+            </div>
+
+            {/* Appearance */}
+            <div className="setting-row">
+              <div className="setting-copy">
+                <strong>
+                  <Moon size={15} color="var(--accent)" /> Visual Theme
+                </strong>
+                <span>High-contrast Obsidian Dark engineered for low-light gym floors</span>
+              </div>
+              <span className="detail-tag">Obsidian Dark</span>
+            </div>
+          </div>
+
+          <button
+            className="ghost-button danger-button"
+            style={{ marginTop: 28 }}
+            onClick={signOut}
+            disabled={signingOut}
+          >
+            <LogOut size={15} /> {signingOut ? "Signing out..." : "Sign out of account"}
+          </button>
+        </section>
+
+        {/* Pro Membership Card Sidebar */}
+        <aside
+          className="panel profile-card"
+          style={{
+            alignSelf: "start",
+            border: "1px solid rgba(16, 231, 97, 0.3)",
+            background:
+              "linear-gradient(180deg, rgba(16, 231, 97, 0.08) 0%, rgba(16, 22, 32, 0.9) 100%)",
+          }}
+        >
+          <div
+            className="stat-icon"
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 12,
+              background: "var(--accent-soft)",
+              color: "var(--accent)",
+              border: "1px solid rgba(16, 231, 97, 0.3)",
+            }}
+          >
+            <Crown size={22} />
+          </div>
+          <h3 className="routine-title" style={{ marginTop: 16 }}>
+            GymTracker Pro
+          </h3>
+          <p className="routine-meta" style={{ marginTop: 4 }}>
+            Everything you need for elite athletic progression and zero-friction training.
+          </p>
+
+          <div className="goal-list" style={{ margin: "20px 0" }}>
+            <div className="goal-row">
+              <span>
+                <Check size={14} color="var(--accent)" style={{ display: "inline", marginRight: 6 }} />
+                Unlimited Custom Splits
+              </span>
+              <strong style={{ color: "var(--accent)" }}>Unlocked</strong>
+            </div>
+            <div className="goal-row">
+              <span>
+                <Check size={14} color="var(--accent)" style={{ display: "inline", marginRight: 6 }} />
+                Smart Equipment Swaps
+              </span>
+              <strong style={{ color: "var(--accent)" }}>Unlocked</strong>
+            </div>
+            <div className="goal-row">
+              <span>
+                <Check size={14} color="var(--accent)" style={{ display: "inline", marginRight: 6 }} />
+                Volume & Balance Radar
+              </span>
+              <strong style={{ color: "var(--accent)" }}>Unlocked</strong>
+            </div>
+            <div className="goal-row">
+              <span>
+                <Check size={14} color="var(--accent)" style={{ display: "inline", marginRight: 6 }} />
+                Cloud Device Sync
+              </span>
+              <strong style={{ color: "var(--accent)" }}>Unlocked</strong>
+            </div>
+          </div>
+
+          <button
+            className="primary-button"
+            style={{ width: "100%" }}
+            onClick={() => setUpgradeOpen(true)}
+          >
+            <Sparkles size={15} /> Pro Membership Perks
+          </button>
+        </aside>
+      </div>
+
+      {/* Pro Membership Modal */}
+      <AnimatePresence>
+        {upgradeOpen && (
+          <motion.div
+            className="modal-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onMouseDown={() => setUpgradeOpen(false)}
+          >
+            <motion.section
+              className="modal"
+              initial={{ opacity: 0, y: 18, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10 }}
+              onMouseDown={(event) => event.stopPropagation()}
+            >
+              <div className="modal-head">
+                <div>
+                  <div className="eyebrow">
+                    <Crown size={14} /> Tier Overview
+                  </div>
+                  <h2 className="modal-title">GymTracker Pro Experience</h2>
+                </div>
+                <button
+                  className="icon-button"
+                  aria-label="Close upgrade dialog"
+                  onClick={() => setUpgradeOpen(false)}
+                >
+                  <X size={15} />
+                </button>
+              </div>
+
+              <p className="page-subtitle" style={{ margin: "0 0 20px" }}>
+                You have full access to all Pro tools in this build. Customize infinite routines, switch equipment on the fly, and inspect granular muscle balance metrics.
+              </p>
+
+              <div className="goal-list" style={{ margin: "20px 0" }}>
+                {[
+                  "Unlimited custom routine splits with multi-muscle targeting",
+                  "1-tap equipment alternative replacement for busy gym hours",
+                  "Automated volume tonnage accumulator and rest timer HUD",
+                  "Offline-first local storage and private Supabase authentication ready",
+                ].map((item) => (
+                  <div className="goal-row" key={item} style={{ padding: "8px 0" }}>
+                    <span>
+                      <Check
+                        size={15}
+                        color="var(--accent)"
+                        style={{ verticalAlign: "middle", marginRight: 8 }}
+                      />
+                      {item}
+                    </span>
+                    <strong style={{ color: "var(--accent)" }}>Active</strong>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                className="primary-button"
+                style={{ width: "100%", height: 48, fontSize: 14 }}
+                onClick={() => setUpgradeOpen(false)}
+              >
+                Continue Training
+              </button>
+            </motion.section>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}

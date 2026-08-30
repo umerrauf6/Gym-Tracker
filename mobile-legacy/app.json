@@ -1,0 +1,54 @@
+{
+  "expo": {
+    "name": "FlexSaaS",
+    "slug": "flexsaas",
+    "version": "0.6.0",
+    "orientation": "portrait",
+    "scheme": "flexsaas",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.flexsaas.app"
+    },
+    "android": {
+      "package": "com.flexsaas.app",
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0A0D10",
+          "dark": {
+            "backgroundColor": "#0A0D10"
+          }
+        }
+      ],
+      "expo-secure-store",
+      "expo-web-browser",
+      [
+        "expo-notifications",
+        {
+          "defaultChannel": "rest-timers"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "FlexSaaS uses your photo library only when you add a private progress photo.",
+          "cameraPermission": "FlexSaaS uses the camera only when you take a private progress photo."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}
