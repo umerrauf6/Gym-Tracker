@@ -155,7 +155,7 @@ export default function ActiveWorkoutPage() {
   return (
     <div className="page">
       {/* Active Workout Header */}
-      <div className="page-head">
+      <div className="page-head active-page-head">
         <div>
           <div className="eyebrow">
             <span className="pulse-dot" /> Live Gym Session
@@ -166,7 +166,7 @@ export default function ActiveWorkoutPage() {
           </p>
         </div>
 
-        <div style={{ display: "flex", gap: 10 }}>
+        <div className="active-head-actions">
           <button
             className="ghost-button danger-button"
             onClick={() => setDiscardModalOpen(true)}
@@ -246,7 +246,7 @@ export default function ActiveWorkoutPage() {
                     </div>
                   </div>
 
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div className="log-head-actions">
                     <button
                       type="button"
                       className="ghost-button"
@@ -322,98 +322,100 @@ export default function ActiveWorkoutPage() {
                 </AnimatePresence>
 
                 {/* Set Table */}
-                <table className="set-table">
-                  <thead>
-                    <tr>
-                      <th style={{ width: 50 }}>Set</th>
-                      <th>Weight ({unit})</th>
-                      <th>Reps</th>
-                      <th style={{ width: 60, textAlign: "center" }}>Done</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {logged.sets.map((set, setIndex) => (
-                      <tr key={set.id}>
-                        <td className="set-number">{setIndex + 1}</td>
-                        <td>
-                          <div className="set-stepper">
-                            <button
-                              className="stepper-btn"
-                              aria-label="Decrease weight"
-                              onClick={() => adjustWeight(exercise.id, set.id, set.weight, -2.5)}
-                            >
-                              <Minus size={12} />
-                            </button>
-                            <input
-                              aria-label={`Weight set ${setIndex + 1}`}
-                              className="set-input"
-                              type="number"
-                              step="0.5"
-                              value={set.weight}
-                              onChange={(event) =>
-                                updateSet(
-                                  exercise.id,
-                                  set.id,
-                                  "weight",
-                                  Number(event.target.value)
-                                )
-                              }
-                            />
-                            <button
-                              className="stepper-btn"
-                              aria-label="Increase weight"
-                              onClick={() => adjustWeight(exercise.id, set.id, set.weight, 2.5)}
-                            >
-                              <Plus size={12} />
-                            </button>
-                          </div>
-                        </td>
-                        <td>
-                          <div className="set-stepper">
-                            <button
-                              className="stepper-btn"
-                              aria-label="Decrease reps"
-                              onClick={() => adjustReps(exercise.id, set.id, set.reps, -1)}
-                            >
-                              <Minus size={12} />
-                            </button>
-                            <input
-                              aria-label={`Reps set ${setIndex + 1}`}
-                              className="set-input"
-                              type="number"
-                              value={set.reps}
-                              onChange={(event) =>
-                                updateSet(
-                                  exercise.id,
-                                  set.id,
-                                  "reps",
-                                  Number(event.target.value)
-                                )
-                              }
-                            />
-                            <button
-                              className="stepper-btn"
-                              aria-label="Increase reps"
-                              onClick={() => adjustReps(exercise.id, set.id, set.reps, 1)}
-                            >
-                              <Plus size={12} />
-                            </button>
-                          </div>
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          <motion.button
-                            whileTap={{ scale: 0.88 }}
-                            aria-label={`Complete set ${setIndex + 1}`}
-                            className={`set-check ${set.done ? "done" : ""}`}
-                            onClick={() => handleToggle(exercise.id, set.id, set.done)}
-                          >
-                            {set.done && <Check size={18} strokeWidth={2.6} />}
-                          </motion.button>
-                        </td>
+                <div className="set-table-wrap">
+                  <table className="set-table">
+                    <thead>
+                      <tr>
+                        <th style={{ width: 44 }}>Set</th>
+                        <th>Weight ({unit})</th>
+                        <th>Reps</th>
+                        <th style={{ width: 56, textAlign: "center" }}>Done</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {logged.sets.map((set, setIndex) => (
+                        <tr key={set.id}>
+                          <td className="set-number">{setIndex + 1}</td>
+                          <td>
+                            <div className="set-stepper">
+                              <button
+                                className="stepper-btn"
+                                aria-label="Decrease weight"
+                                onClick={() => adjustWeight(exercise.id, set.id, set.weight, -2.5)}
+                              >
+                                <Minus size={12} />
+                              </button>
+                              <input
+                                aria-label={`Weight set ${setIndex + 1}`}
+                                className="set-input"
+                                type="number"
+                                step="0.5"
+                                value={set.weight}
+                                onChange={(event) =>
+                                  updateSet(
+                                    exercise.id,
+                                    set.id,
+                                    "weight",
+                                    Number(event.target.value)
+                                  )
+                                }
+                              />
+                              <button
+                                className="stepper-btn"
+                                aria-label="Increase weight"
+                                onClick={() => adjustWeight(exercise.id, set.id, set.weight, 2.5)}
+                              >
+                                <Plus size={12} />
+                              </button>
+                            </div>
+                          </td>
+                          <td>
+                            <div className="set-stepper">
+                              <button
+                                className="stepper-btn"
+                                aria-label="Decrease reps"
+                                onClick={() => adjustReps(exercise.id, set.id, set.reps, -1)}
+                              >
+                                <Minus size={12} />
+                              </button>
+                              <input
+                                aria-label={`Reps set ${setIndex + 1}`}
+                                className="set-input"
+                                type="number"
+                                value={set.reps}
+                                onChange={(event) =>
+                                  updateSet(
+                                    exercise.id,
+                                    set.id,
+                                    "reps",
+                                    Number(event.target.value)
+                                  )
+                                }
+                              />
+                              <button
+                                className="stepper-btn"
+                                aria-label="Increase reps"
+                                onClick={() => adjustReps(exercise.id, set.id, set.reps, 1)}
+                              >
+                                <Plus size={12} />
+                              </button>
+                            </div>
+                          </td>
+                          <td style={{ textAlign: "center" }}>
+                            <motion.button
+                              whileTap={{ scale: 0.88 }}
+                              aria-label={`Complete set ${setIndex + 1}`}
+                              className={`set-check ${set.done ? "done" : ""}`}
+                              onClick={() => handleToggle(exercise.id, set.id, set.done)}
+                            >
+                              {set.done && <Check size={18} strokeWidth={2.6} />}
+                            </motion.button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
 
                 <button
                   className="ghost-button"
