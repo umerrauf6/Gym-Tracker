@@ -46,7 +46,7 @@ export default function WorkoutsPage() {
         title="Workouts & Routines"
         subtitle="Launch a pre-programmed routine in one tap, or build custom training splits for your goals."
         action={
-          <div style={{ display: "flex", gap: 10 }}>
+          <div className="page-head-actions">
             <button
               className="secondary-button"
               onClick={() => setEditingId("new")}
@@ -63,20 +63,9 @@ export default function WorkoutsPage() {
       {/* Active Workout Resume Banner */}
       {activeWorkout && (
         <motion.div
-          className="panel"
+          className="panel workout-resume-banner"
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          style={{
-            padding: "20px 24px",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: 16,
-            marginBottom: 24,
-            border: "1px solid rgba(16, 231, 97, 0.35)",
-            background:
-              "linear-gradient(90deg, rgba(16, 231, 97, 0.08) 0%, rgba(16, 22, 32, 0.95) 100%)",
-          }}
         >
           <div>
             <div className="eyebrow">
