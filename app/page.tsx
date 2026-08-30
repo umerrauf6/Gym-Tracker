@@ -15,11 +15,26 @@ import {
   Timer,
   Zap,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { PublicNavbar } from "@/src/components/public-nav";
+import { createClient } from "@/src/lib/supabase/client";
 
 export default function LandingPage() {
+  const router = useRouter();
+
+  // Redirect signed in users immediately to dashboard
+  useEffect(() => {
+    const supabase = createClient();
+    if (!supabase) return;
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        router.replace("/dashboard");
+      }
+    });
+  }, [router]);
+
   // Interactive Live Gym Floor Simulator for hero
   const [demoSets, setDemoSets] = useState([
     { id: 1, reps: 10, weight: 80, done: true },
