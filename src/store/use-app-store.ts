@@ -29,6 +29,8 @@ type AppState = {
   restSeconds: number;
   unit: "kg" | "lb";
   notifications: boolean;
+  isPro: boolean;
+  setIsPro: (isPro: boolean) => void;
   startRoutine: (routineId: string) => void;
   startQuickWorkout: () => void;
   updateSet: (exerciseId: string, setId: string, field: "reps" | "weight", value: number) => void;
@@ -53,7 +55,8 @@ const makeWorkout = (name: string, exerciseIds: string[]): WorkoutSession => ({
 });
 
 export const useAppStore = create<AppState>()(persist((set, get) => ({
-  routines, history, activeWorkout: null, restSeconds: 90, unit: "kg", notifications: true,
+  routines, history, activeWorkout: null, restSeconds: 90, unit: "kg", notifications: true, isPro: false,
+  setIsPro: (isPro) => set({ isPro }),
   startRoutine: (routineId) => { const routine = get().routines.find((item) => item.id === routineId); if (routine) set({ activeWorkout: makeWorkout(routine.name, routine.exerciseIds) }); },
   startQuickWorkout: () => set({ activeWorkout: makeWorkout("Quick Workout", ["barbell-bench-press", "lat-pulldown", "back-squat"]) }),
   updateSet: (exerciseId, setId, field, value) => set((state) => ({ activeWorkout: state.activeWorkout ? { ...state.activeWorkout, exercises: state.activeWorkout.exercises.map((exercise) => exercise.exerciseId === exerciseId ? { ...exercise, sets: exercise.sets.map((item) => item.id === setId ? { ...item, [field]: Math.max(0, value || 0) } : item) } : exercise) } : null })),

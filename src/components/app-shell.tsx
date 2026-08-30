@@ -29,7 +29,7 @@ const navItems = [
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { activeWorkout, startQuickWorkout } = useAppStore();
+  const { activeWorkout, startQuickWorkout, isPro } = useAppStore();
   const [search, setSearch] = useState("");
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [userName, setUserName] = useState("Lifter");
@@ -206,7 +206,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <span className="avatar">{userInitials}</span>
               <span className="user-copy">
                 <span className="user-name" style={{ textTransform: "capitalize" }}>{userName}</span>
-                <span className="user-plan">Pro Member</span>
+                <span className="user-plan" style={{ color: isPro ? "var(--accent)" : "var(--text-muted)" }}>
+                  {isPro ? "Pro Member" : "Free Plan"}
+                </span>
               </span>
             </Link>
           </div>

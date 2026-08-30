@@ -13,14 +13,15 @@ import {
   Volume2,
   X,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 import { PageHeading } from "@/src/components/page-heading";
 import { getSupabaseBrowserClient } from "@/src/lib/supabase";
 import { sessionVolume, useAppStore } from "@/src/store/use-app-store";
 
-export default function ProfilePage() {
+function ProfileContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const {
     notifications,
     toggleNotifications,
@@ -29,6 +30,8 @@ export default function ProfilePage() {
     unit,
     setUnit,
     history,
+    isPro,
+    setIsPro,
   } = useAppStore();
 
   const [userEmail, setUserEmail] = useState<string>("");
@@ -42,6 +45,14 @@ export default function ProfilePage() {
 
   const totalTonnage = history.reduce((sum, item) => sum + sessionVolume(item), 0);
 
+  // Check for successful payment return
+  useEffect(() => {
+    if (searchParams.get("payment") === "success") {
+      setIsPro(true);
+    }
+  }, [searchParams, setIsPro]);
+
+  // Fetch logged in user details
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
     if (!supabase) return;
@@ -63,9 +74,12 @@ export default function ProfilePage() {
             .toUpperCase();
           setUserInitials(initials || "UR");
         }
+        if (user.user_metadata?.is_pro || user.app_metadata?.is_pro) {
+          setIsPro(true);
+        }
       }
     });
-  }, []);
+  }, [setIsPro]);
 
   const handleCheckout = async () => {
     try {
@@ -113,7 +127,12 @@ export default function ProfilePage() {
             <div>
               <h2 className="profile-name" style={{ textTransform: "capitalize" }}>{userName}</h2>
               <div className="profile-email">
-                {userEmail || "Signed In User"} · <span style={{ color: "var(--accent)", fontWeight: 700 }}>Pro Member</span>
+                {userEmail || "Signed In User"} ·{" "}
+                {isPro ? (
+                  <span style={{ color: "var(--accent)", fontWeight: 700 }}>Pro Member</span>
+                ) : (
+                  <span style={{ color: "var(--text-muted)", fontWeight: 600 }}>Free Plan</span>
+                )}
               </div>
             </div>
           </div>
@@ -151,8 +170,8 @@ export default function ProfilePage() {
               <div style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>
                 Status
               </div>
-              <div style={{ fontSize: 20, fontWeight: 800, color: "var(--cyan)", marginTop: 2 }}>
-                Active
+              <div style={{ fontSize: 20, fontWeight: 800, color: isPro ? "var(--accent)" : "var(--cyan)", marginTop: 2 }}>
+                {isPro ? "Pro" : "Active"}
               </div>
             </div>
           </div>
@@ -202,11 +221,11 @@ export default function ProfilePage() {
               </select>
             </div>
 
-            {/* Weight Units */}
+            {/* Units */}
             <div className="setting-row">
               <div className="setting-copy">
                 <strong>
-                  <Ruler size={15} color="var(--purple)" /> Weight Unit Standard
+                  <Ruler size={15} color="var(--purple)" /> Weight Metric Units
                 </strong>
                 <span>Used across exercise logs, routine builders, and analytics</span>
               </div>
@@ -269,9 +288,10 @@ export default function ProfilePage() {
           className="panel profile-card"
           style={{
             alignSelf: "start",
-            border: "1px solid rgba(16, 231, 97, 0.3)",
-            background:
-              "linear-gradient(180deg, rgba(16, 231, 97, 0.08) 0%, rgba(16, 22, 32, 0.9) 100%)",
+            border: isPro ? "1px solid rgba(16, 231, 97, 0.3)" : "1px solid var(--border)",
+            background: isPro
+              ? "linear-gradient(180deg, rgba(16, 231, 97, 0.08) 0%, rgba(16, 22, 32, 0.9) 100%)"
+              : "var(--bg-card)",
           }}
         >
           <div
@@ -280,57 +300,67 @@ export default function ProfilePage() {
               width: 44,
               height: 44,
               borderRadius: 12,
-              background: "var(--accent-soft)",
-              color: "var(--accent)",
-              border: "1px solid rgba(16, 231, 97, 0.3)",
+              background: isPro ? "var(--accent-soft)" : "rgba(255,255,255,0.05)",
+              color: isPro ? "var(--accent)" : "var(--text-muted)",
+              border: isPro ? "1px solid rgba(16, 231, 97, 0.3)" : "1px solid var(--border)",
             }}
           >
             <Crown size={22} />
           </div>
           <h3 className="routine-title" style={{ marginTop: 16 }}>
-            GymTracker Pro
+            {isPro ? "GymTracker Pro Active" : "GymTracker Pro"}
           </h3>
           <p className="routine-meta" style={{ marginTop: 4 }}>
-            Everything you need for elite athletic progression and zero-friction training.
+            {isPro
+              ? "You have lifetime access to all elite progression tools and cloud sync."
+              : "Everything you need for elite athletic progression and zero-friction training."}
           </p>
 
           <div className="goal-list" style={{ margin: "20px 0" }}>
             <div className="goal-row">
               <span>
-                <Check size={14} color="var(--accent)" style={{ display: "inline", marginRight: 6 }} />
+                <Check size={14} color={isPro ? "var(--accent)" : "var(--text-muted)"} style={{ display: "inline", marginRight: 6 }} />
                 Unlimited Custom Splits
               </span>
-              <strong style={{ color: "var(--accent)" }}>Unlocked</strong>
+              <strong style={{ color: isPro ? "var(--accent)" : "var(--text-muted)" }}>{isPro ? "Unlocked" : "Pro"}</strong>
             </div>
             <div className="goal-row">
               <span>
-                <Check size={14} color="var(--accent)" style={{ display: "inline", marginRight: 6 }} />
+                <Check size={14} color={isPro ? "var(--accent)" : "var(--text-muted)"} style={{ display: "inline", marginRight: 6 }} />
                 Smart Equipment Swaps
               </span>
-              <strong style={{ color: "var(--accent)" }}>Unlocked</strong>
+              <strong style={{ color: isPro ? "var(--accent)" : "var(--text-muted)" }}>{isPro ? "Unlocked" : "Pro"}</strong>
             </div>
             <div className="goal-row">
               <span>
-                <Check size={14} color="var(--accent)" style={{ display: "inline", marginRight: 6 }} />
+                <Check size={14} color={isPro ? "var(--accent)" : "var(--text-muted)"} style={{ display: "inline", marginRight: 6 }} />
                 Volume & Balance Radar
               </span>
-              <strong style={{ color: "var(--accent)" }}>Unlocked</strong>
+              <strong style={{ color: isPro ? "var(--accent)" : "var(--text-muted)" }}>{isPro ? "Unlocked" : "Pro"}</strong>
             </div>
             <div className="goal-row">
               <span>
-                <Check size={14} color="var(--accent)" style={{ display: "inline", marginRight: 6 }} />
+                <Check size={14} color={isPro ? "var(--accent)" : "var(--text-muted)"} style={{ display: "inline", marginRight: 6 }} />
                 Cloud Device Sync
               </span>
-              <strong style={{ color: "var(--accent)" }}>Unlocked</strong>
+              <strong style={{ color: isPro ? "var(--accent)" : "var(--text-muted)" }}>{isPro ? "Unlocked" : "Pro"}</strong>
             </div>
           </div>
 
           <button
-            className="primary-button"
+            className={isPro ? "secondary-button" : "primary-button"}
             style={{ width: "100%" }}
             onClick={() => setUpgradeOpen(true)}
           >
-            <Sparkles size={15} /> Pro Membership Perks
+            {isPro ? (
+              <>
+                <Crown size={15} /> Pro Membership Active
+              </>
+            ) : (
+              <>
+                <Sparkles size={15} /> Upgrade to Pro ($29)
+              </>
+            )}
           </button>
         </aside>
       </div>
@@ -357,7 +387,9 @@ export default function ProfilePage() {
                   <div className="eyebrow">
                     <Crown size={14} /> Tier Overview
                   </div>
-                  <h2 className="modal-title">GymTracker Pro Experience</h2>
+                  <h2 className="modal-title">
+                    {isPro ? "GymTracker Pro Unlocked" : "Upgrade to GymTracker Pro"}
+                  </h2>
                 </div>
                 <button
                   className="icon-button"
@@ -369,7 +401,9 @@ export default function ProfilePage() {
               </div>
 
               <p className="page-subtitle" style={{ margin: "0 0 20px" }}>
-                You have full access to all Pro tools in this build. Customize infinite routines, switch equipment on the fly, and inspect granular muscle balance metrics.
+                {isPro
+                  ? "Your account has full lifetime access to all Pro features. Customize infinite routines, switch equipment on the fly, and inspect muscle balance metrics."
+                  : "Upgrade now to unlock infinite routine splits, on-the-fly equipment alternatives, and detailed muscle balance radar analytics."}
               </p>
 
               <div className="goal-list" style={{ margin: "20px 0" }}>
@@ -377,7 +411,7 @@ export default function ProfilePage() {
                   "Unlimited custom routine splits with multi-muscle targeting",
                   "1-tap equipment alternative replacement for busy gym hours",
                   "Automated volume tonnage accumulator and rest timer HUD",
-                  "Offline-first local storage and private Supabase authentication ready",
+                  "Offline-first local storage and private Supabase authentication",
                 ].map((item) => (
                   <div className="goal-row" key={item} style={{ padding: "8px 0" }}>
                     <span>
@@ -388,7 +422,9 @@ export default function ProfilePage() {
                       />
                       {item}
                     </span>
-                    <strong style={{ color: "var(--accent)" }}>Active</strong>
+                    <strong style={{ color: isPro ? "var(--accent)" : "var(--text-muted)" }}>
+                      {isPro ? "Active" : "Pro"}
+                    </strong>
                   </div>
                 ))}
               </div>
@@ -400,14 +436,24 @@ export default function ProfilePage() {
               )}
 
               <div style={{ display: "grid", gap: 10, marginTop: 24 }}>
-                <button
-                  className="primary-button"
-                  style={{ width: "100%", height: 48, fontSize: 14 }}
-                  disabled={checkingOut}
-                  onClick={handleCheckout}
-                >
-                  <Sparkles size={16} /> {checkingOut ? "Redirecting to Stripe..." : "Upgrade to Pro Lifetime ($29)"}
-                </button>
+                {!isPro ? (
+                  <button
+                    className="primary-button"
+                    style={{ width: "100%", height: 48, fontSize: 14 }}
+                    disabled={checkingOut}
+                    onClick={handleCheckout}
+                  >
+                    <Sparkles size={16} /> {checkingOut ? "Redirecting to Stripe..." : "Upgrade to Pro Lifetime ($29)"}
+                  </button>
+                ) : (
+                  <button
+                    className="secondary-button"
+                    style={{ width: "100%", height: 48, fontSize: 14 }}
+                    onClick={() => setUpgradeOpen(false)}
+                  >
+                    <Check size={16} /> Continue Training with Pro
+                  </button>
+                )}
                 <button
                   className="ghost-button"
                   style={{ width: "100%", height: 40, fontSize: 13 }}
@@ -421,5 +467,13 @@ export default function ProfilePage() {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={<div className="page" style={{ padding: 24 }}>Loading profile...</div>}>
+      <ProfileContent />
+    </Suspense>
   );
 }
